@@ -4,6 +4,8 @@ import requests
 import json
 from datetime import datetime
 import time
+import numpy as np
+from scipy import stats
 
 #load the app id and the api key. These should not be added to the git repo.
 #currently strings.
@@ -63,30 +65,31 @@ def match(id):
 def summoner_by_name(name):
 	return f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{name}'
 
-
 def mastery_by_summoner(id):
 	return f'https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{id}'
 
-
+def load_json(filename):
+	with open(filename) as file:
+		return json.loads(file.read())
 
 '''load static data from json files.'''
 #champs
-champions = None
-with open("champion.json") as file:
-	champions = json.loads(file.read())
-
+champions = load_json("champion.json")
 champs_by_name = champions['data']
 champs = {v['key']: v for _,v in champs_by_name.items()}
 
 #our sample (courtesy of http://canisback.com/matchId/matchlist_na1.json) for now.
-sample_matches = None
-with open("match_sample.json") as file:
-	sample_matches = json.loads(file.read())
+sample_matches = load_json("match_sample.json")
+#with open("match_sample.json") as file:
+#	sample_matches = json.loads(file.read())
 
-#our player sample (courtesy of make_player_sample() below)
-sample_players = None
-with open("player_sample.json") as file:
-	sample_players = json.loads(file.read())
+#our player sample (courtesy of make_player_sample() below + our sample matches)
+sample_players = load_json("player_sample.json")
+
+#our mastery-based character loyalty data (courtesy of mastery_loyalty() below)
+#same index as player sample.
+sample_loyalties = load_json("loyalty_sample.json")
+
 
 
 def get_match(id):
@@ -112,9 +115,14 @@ def save_as_json(data, filename):
 		json.dump(data, outfile)
 
 
-		
+
+#takes a python dict.
+def mastery_loyalty(masteries):
+	return masteries[0]['championPoints']/sum(m['championPoints'] for m in masteries)
 
 
+
+'''misc tests'''
 def test_seasons():
 	test_matches = [get_match(i).json() for i in sample_matches[10:20]]
 	for m in test_matches:
