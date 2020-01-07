@@ -68,9 +68,15 @@ def summoner_by_name(name):
 def mastery_by_summoner(id):
 	return f'https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{id}'
 
+def leagues_by_summoner(id):
+	return f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{id}'
+
 def load_json(filename):
 	with open(filename) as file:
 		return json.loads(file.read())
+
+def load_json_array(filename):
+	return np.array(load_json(filename))
 
 '''load static data from json files.'''
 #champs
@@ -80,15 +86,19 @@ champs = {v['key']: v for _,v in champs_by_name.items()}
 
 #our sample (courtesy of http://canisback.com/matchId/matchlist_na1.json) for now.
 sample_matches = load_json("match_sample.json")
-#with open("match_sample.json") as file:
-#	sample_matches = json.loads(file.read())
 
 #our player sample (courtesy of make_player_sample() below + our sample matches)
 sample_players = load_json("player_sample.json")
 
 #our mastery-based character loyalty data (courtesy of mastery_loyalty() below)
 #same index as player sample.
-sample_loyalties = load_json("loyalty_sample.json")
+sample_loyalties = load_json_array("loyalty_sample.json")
+
+#our ranked total for each player. (how many ranked games they've played this season)
+sample_total_ranked = load_json_array("totalranked_sample.json")
+
+#our best rank for each player (their highest rank of all their ranked queues)
+sample_best_ranked = load_json_array("bestrank_sample.json")
 
 
 
@@ -120,6 +130,43 @@ def save_as_json(data, filename):
 def mastery_loyalty(masteries):
 	return masteries[0]['championPoints']/sum(m['championPoints'] for m in masteries)
 
+#now I want more information from the "leagues" database.
+#this is only about ranked matches.
+#maybe "number of ranked matches played"
+'''
+{
+	total_ranked = _ (how much ranked do you play)
+	best_lp = _ (how good are you in your best queue)
+}
+'''
+
+tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
+ranks = ["IV", "III", "II", "I"]
+
+#tested
+def numerical_ranking(league_entry):
+	tier = league_entry['tier']
+	rank = league_entry['rank']
+	lp = league_entry['leaguePoints']
+	return tiers.index(tier)*400 + ranks.index(rank)*100 + lp
+
+#returns two lists
+def league_info(summoner_id):
+	r = get(leagues_by_summoner(summoner_id))
+	if r.status_code == 200:
+		leagues = r.json()
+		total_ranked = sum(l['wins'] + l['losses'] for l in leagues)
+		lps = [numerical_ranking(l) for l in leagues]
+		best_lp = max(lps) if len(lps) > 0 else 0
+		return total_ranked, best_lp
+	else:
+		print("league info got status code {r.status_code}")
+
+def unzip(list_of_tuples):
+	return list(map(list, zip(*list_of_tuples)))
+
+def league_info_many(summoner_ids):
+	return unzip(map(league_info, summoner_ids))
 
 
 '''misc tests'''
