@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import time
 import numpy as np
+from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -117,14 +118,20 @@ classes = ['Fighter', 'Assassin', 'Mage', 'Support', 'Tank', 'Marksman']
 players_by_class = {clss: set(i for i,p in enumerate(sample_players) if (clss in champs[str(sample_favs[i])]['tags'])) for clss in classes}
 
 
-def make_category(col, pred):
-	return set(i for i,x in enumerate(col) if pred(i,x))
+
 #some categories
 Yasuo_mains = set(i for i,p in enumerate(sample_players) if sample_favs[i] == 157)
+
 hardcore_players = set(i for i,t in enumerate(sample_total_ranked) if t > 1500)
 casual_players = set(i for i,t in enumerate(sample_total_ranked) if t < 10)
+
 fan_children = set(i for i,l in enumerate(sample_loyalties) if l > .5)
 dabblers = set(i for i,l in enumerate(sample_loyalties) if l < .2)
+
+support_players = set(i for i in range(n) if ((i in players_by_class['Support']) or (i in players_by_class['Tank'] and not (i in players_by_class['Fighter']))))
+
+def category_bools(category):
+	return [(i in category) for i in range(n)]
 
 def class_main_bools(clss):
 	mains = players_by_class[clss]
@@ -143,9 +150,35 @@ playerDF = pd.DataFrame({
 	'support': class_main_bools('Support'),
 	'marksman': class_main_bools('Marksman'),
 	'tank': class_main_bools('Tank'),
-	'yasuo': [(i in Yasuo_mains) for i in range(n)]
+	'yasuo': category_bools(Yasuo_mains),
+	'controlledRank': sample_best_ranked / sample_total_ranked,
+	'supportPlayer': category_bools(support_players),
+	#'hardcore': category_bools(hardcore_players),
+	#'casual': category_bools(casual_players)
 })
 
+#playerDF = playerDF[playerDF.totalRanked != 0]
+
+
+'''
+champion dataframe
+'''
+#win rate
+#play rate
+#classes
+#gender?
+
+
+
+'''
+team/match dataframe
+'''
+#win
+#first dragon
+#game length?
+#number of unique classes on team
+#total rank of players
+#total other things of players
 
 
 def likes_class(player_index, clss):
@@ -217,7 +250,10 @@ def numerical_ranking(league_entry):
 def tier_color(num_rank):
 	return [(.4,.4,.5), (.8,.5,.2), (.7,.7,.7), (.8,.8,.2), (.1,.8,.5), (.7,.8,.9), (0,0,0)][num_rank // 400]
 
-tier_color_sample = [tier_color(r) for r in sample_best_ranked]
+tier_color_sample = np.array([tier_color(r) for r in sample_best_ranked])
+
+def color_by_category(category):
+	return np.array(["blue" if (i in category) else "red" for i in range(n)])
 
 #returns two lists
 def league_info(summoner_id):
@@ -263,9 +299,42 @@ graphs
 player_set = set(sample_players)
 idset = set(range(len(sample_players)))
 
-def graph(x,y):
+#for quick graphs
+def graph(x,y, **kwargs):
 	fig, ax = plt.subplots()
-	ax.scatter(x,y,c=tier_color_sample)
+	logx = kwargs.get('logx')
+	xlabel = kwargs.get('xlabel')
+	ylabel = kwargs.get('ylabel')
+	fitline = kwargs.get('fitline')
+
+	if logx:
+		ax.set_xscale("log")
+	if xlabel:
+		ax.set_xlabel(xlabel)
+	if ylabel:
+		ax.set_ylabel(ylabel)
+
+	mask = np.isfinite(x) & np.isfinite(y)
+	kwarg_color = kwargs.get('c')
+	c = kwarg_color if kwarg_color is not None else tier_color_sample
+
+	c = c[mask]
+	x = x[mask]
+	y = y[mask]
+
+	ax.scatter(x,y,c=c)
+
+	if fitline:
+		b, m = polyfit(x, y, 1)
+		ax.plot(x, b+m*x, '-')
+
+	return ax
+
+def graph_from_df(x, y, **kwargs):
+	kwargs['xlabel'] = x
+	kwargs['ylabel'] = y
+	return graph(playerDF[x].to_numpy(), playerDF[y].to_numpy(), **kwargs)
+
 
 def graph_by_class(ax,x,y,clss):
 	lovers = players_by_class[clss]
@@ -275,16 +344,20 @@ def graph_by_class(ax,x,y,clss):
 	ax.scatter([x[i] for i in lovers], [y[i] for i in lovers], color="blue", s = size*1.5)
 	ax.scatter([x[i] for i in haters], [y[i] for i in haters], color="red", s = size)
 	ax.set_title(clss)
+	return ax
 
 def graph_by_all_classes(x, y):
 	fig, axs = plt.subplots(2,3)
-	for i,ax in enumerate(axs.flatten()):
+	axs = axs.flatten()
+	for i,ax in enumerate(axs):
 		graph_by_class(ax, x, y, classes[i])
+	return axs
 
 def graph_by_Yasuo_mains(x, y):
 	fig, ax = plt.subplots()
 	ax.scatter(x,y,color="blue", s=2)
 	ax.scatter([x[i] for i in Yasuo_mains], [y[i] for i in Yasuo_mains], color="red", s=3)
+	return ax
 
 
 
