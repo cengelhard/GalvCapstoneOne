@@ -12,6 +12,20 @@ There is a particular superstition among the players, including many professiona
 
 Ranks are divided into tiers which are color coded in most of my charts. The tiers included in my data set are Iron, Bronze, Silver, Gold, Platinum, and Diamond. There are tiers higher than Diamond, but they have very low populations and did not appear in my sample. Note that Platinum is represented by a greenish color to avoid confusing it with Iron and Gold.
 
+Each tier is divided into ranks from IV (worst) to I (best). And then each rank has a number of "league points" from 0 to 100, which is used to go up ranks and tiers. I converted Riot's rank system into a single number using the following forumula:
+
+'''
+tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
+ranks = ["IV", "III", "II", "I"]
+
+#tested
+def numerical_ranking(league_entry):
+	tier = league_entry['tier']
+	rank = league_entry['rank']
+	lp = league_entry['leaguePoints']
+	return tiers.index(tier)*400 + ranks.index(rank)*100 + lp
+'''
+
 # Data Description
 
 I used the Riot games API to get most of my data. One exception was my initial sample of matches, which was generated through a random walk of the graph of matches and players, from the website http://canisback.com/matchId/matchlist_na1.json. (This data is recalculated every 2 days or so.)
@@ -24,13 +38,14 @@ I tested this data set to see how representative of the population it was. In te
 
 My first task was to define a statistic representing a player's loyalty to their favorite champion. The API provides a list of all champions that a player has played, and assignes a "mastery score" to each. Mastery score is affected by many things: how many matches the player has completed with the champion, how well they performed in those matches, and other factors listed on this wiki page: https://leagueoflegends.fandom.com/wiki/Champion_Mastery
 
-I decided to use champion mastery as an estimation of the player's preference for a particular champion because it's what Riot and the players use, and because if I were to loop through each player's match history and calculate my own preference value, this would be hindered by the rate limits on the API. (Making 1000 API calls was rate limited to about 20 minutes, so multiply that by the number of matches to look back on, and we have a situation.)
+I decided to use champion mastery as an estimation of the player's preference for a particular champion because it's what Riot and the players use, and because if I were to loop through each player's match history and calculate my own preference value, this would be hindered by the rate limits on the API. (Making 1000 API calls is rate limited to about 20 minutes, so multiply that by the number of matches to look back on, and we have a situation.)
 
 To calculate "loyalty", I divided the mastery score of a player's highest scored champion by the total mastery score of all champions that player has used, producing a number in the range 0.0 to 1.0. 
 
+
 # Initial results
 
-![Loylty vs Rank](/loyalty_v_rank.png?raw=true "Loylty vs Rank")
+![Loyalty vs Rank](/loyalty_v_rank.png?raw=true "Loyalty vs Rank")
 
 The chart above shows that naively, the superstition of players appears to be incorrect. There is no strong correlation between champion loyalty and rank, and there is actually a weak negative correlation. Why might this be? Surely, practicing more with a champion should lead to more skill. 
 
@@ -40,15 +55,13 @@ But in the interest of honesty, I considered counter arguments based on further 
 
 # What actually does correlate with rank?
 
-I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into up to 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to be useful. 
+I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into up to 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to be useful. (0.72) 
 
 The strongest correlation to rank that I could find was unsurprising: number of ranked games played.
-
 ![Total vs Rank](/total_v_rank.png?raw=true "Total vs Rank")
 
 But lo! Number of ranked games played also negatively correlates with loyalty. 
-
-![Loylty vs Total](/loyalty_v_total.png?raw=true "Loylty vs Total")
+![Loyalty vs Total](/loyalty_v_total.png?raw=true "Loyalty vs Total")
 
 The more games a player plays, the more variety of champions they tend to have used. This includes players who are "serial monogamists", who stick to one champion at a time, but have changed which champion this is in the past. 
 
@@ -57,8 +70,7 @@ The more games a player plays, the more variety of champions they tend to have u
 It could be argued that because loyalty correlates negatively with number of games played, and number of games played correlates strongly with rank, that we need to control our variable better.
 
 So I defined a new statistic called "controlledRank" which is equal to the player's rank divided by the number of games played. This number represents how much rank on average a player gains per game played. This may be a better representation of how loyalty affects performance.
-
-![Loylty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loylty vs ControlledRank")
+![Loyalty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loylty vs ControlledRank")
 
 In this figure, the data appears to confirm the superstition of players, but the correlation is weak.
 
