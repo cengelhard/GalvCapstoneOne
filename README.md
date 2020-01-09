@@ -40,11 +40,15 @@ But in the interest of honesty, I considered counter arguments based on further 
 
 # What actually does correlate with rank?
 
-I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into up to 2 of 6 different champions, and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and correlated too strongly with total number of matches played to be useful. 
+I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into up to 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to be useful. 
 
 The strongest correlation to rank that I could find was unsurprising: number of ranked games played.
 
+![Total vs Rank](/total_v_rank.png?raw=true "Total vs Rank")
+
 But lo! Number of ranked games played also negatively correlates with loyalty. 
+
+![Loylty vs Total](/loyalty_v_total.png?raw=true "Loylty vs Total")
 
 The more games a player plays, the more variety of champions they tend to have used. This includes players who are "serial monogamists", who stick to one champion at a time, but have changed which champion this is in the past. 
 
@@ -54,7 +58,9 @@ It could be argued that because loyalty correlates negatively with number of gam
 
 So I defined a new statistic called "controlledRank" which is equal to the player's rank divided by the number of games played. This number represents how much rank on average a player gains per game played. This may be a better representation of how loyalty affects performance.
 
-In this figure, the correlation appears to confirm the superstition of players, but the correlation is weak.
+![Loylty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loylty vs ControlledRank")
+
+In this figure, the data appears to confirm the superstition of players, but the correlation is weak.
 
 # Conclusion
 
