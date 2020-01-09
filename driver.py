@@ -6,6 +6,8 @@ from datetime import datetime
 import time
 import numpy as np
 from scipy import stats
+import matplotlib.pyplot as plt
+import pandas as pd
 
 #load the app id and the api key. These should not be added to the git repo.
 #currently strings.
@@ -29,6 +31,7 @@ long_term_wait = 120
 
 last_successful_request = None
 
+#makes an API call and corrects for rate limits. May stall for 2 minutes.
 def get(url):
 	def with_auth(r):
 		r.headers["X-Riot-Token"] = api_key
@@ -54,9 +57,6 @@ def get(url):
 	last_successful_request = datetime.now()
 	return r
 
-				
-
-
 
 
 def match(id):
@@ -64,6 +64,9 @@ def match(id):
 
 def summoner_by_name(name):
 	return f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{name}'
+
+def summoner_by_id(summoner_id):
+	return f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/{summoner_id}'
 
 def mastery_by_summoner(id):
 	return f'https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{id}'
@@ -89,6 +92,7 @@ sample_matches = load_json("match_sample.json")
 
 #our player sample (courtesy of make_player_sample() below + our sample matches)
 sample_players = load_json("player_sample.json")
+n = len(sample_players)
 
 #our mastery-based character loyalty data (courtesy of mastery_loyalty() below)
 #same index as player sample.
@@ -100,6 +104,53 @@ sample_total_ranked = load_json_array("totalranked_sample.json")
 #our best rank for each player (their highest rank of all their ranked queues)
 sample_best_ranked = load_json_array("bestrank_sample.json")
 
+#summoner level for each player
+sample_levels = load_json_array("levels_sample.json")
+
+#each player's favorite champ
+sample_favs = load_json_array("favs_sample.json")
+
+#players who like each champion class based on their fav:
+classes = ['Fighter', 'Assassin', 'Mage', 'Support', 'Tank', 'Marksman']
+#indecies of players, not their id.
+#contains sets of indecies.
+players_by_class = {clss: set(i for i,p in enumerate(sample_players) if (clss in champs[str(sample_favs[i])]['tags'])) for clss in classes}
+
+
+def make_category(col, pred):
+	return set(i for i,x in enumerate(col) if pred(i,x))
+#some categories
+Yasuo_mains = set(i for i,p in enumerate(sample_players) if sample_favs[i] == 157)
+hardcore_players = set(i for i,t in enumerate(sample_total_ranked) if t > 1500)
+casual_players = set(i for i,t in enumerate(sample_total_ranked) if t < 10)
+fan_children = set(i for i,l in enumerate(sample_loyalties) if l > .5)
+dabblers = set(i for i,l in enumerate(sample_loyalties) if l < .2)
+
+def class_main_bools(clss):
+	mains = players_by_class[clss]
+	return [(i in mains) for i in range(n)]
+
+playerDF = pd.DataFrame({
+	'summonerId': sample_players,
+	'level': sample_levels,
+	'loyalty': sample_loyalties,
+	'totalRanked': sample_total_ranked,
+	'bestRanked': sample_best_ranked,
+	'fav': list(map(str,sample_favs)),
+	'fighter': class_main_bools('Fighter'),
+	'mage': class_main_bools('Mage'),
+	'assassin': class_main_bools('Assassin'),
+	'support': class_main_bools('Support'),
+	'marksman': class_main_bools('Marksman'),
+	'tank': class_main_bools('Tank'),
+	'yasuo': [(i in Yasuo_mains) for i in range(n)]
+})
+
+
+
+def likes_class(player_index, clss):
+	#return clss in champs[str(sample_favs[player_index])]['tags']
+	return player_index in players_by_class[clss]
 
 
 def get_match(id):
@@ -120,6 +171,13 @@ def make_player_sample(max_n):
 				return list(playerIds)
 	return list(playerIds)
 
+def summoner_level(summoner_id):
+	r = get(summoner_by_id(summoner_id))
+	if r.status_code == 200:
+		return r.json()['summonerLevel']
+	else:
+		print(f"something went wrong getting summoner level: {r.status_code}")
+
 def save_as_json(data, filename):
 	with open(filename, 'w') as outfile:
 		json.dump(data, outfile)
@@ -129,6 +187,11 @@ def save_as_json(data, filename):
 #takes a python dict.
 def mastery_loyalty(masteries):
 	return masteries[0]['championPoints']/sum(m['championPoints'] for m in masteries)
+
+def favorite_champ(masteries):
+	return masteries[0]['championId']
+
+
 
 #now I want more information from the "leagues" database.
 #this is only about ranked matches.
@@ -143,12 +206,18 @@ def mastery_loyalty(masteries):
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
 ranks = ["IV", "III", "II", "I"]
 
+
 #tested
 def numerical_ranking(league_entry):
 	tier = league_entry['tier']
 	rank = league_entry['rank']
 	lp = league_entry['leaguePoints']
 	return tiers.index(tier)*400 + ranks.index(rank)*100 + lp
+
+def tier_color(num_rank):
+	return [(.4,.4,.5), (.8,.5,.2), (.7,.7,.7), (.8,.8,.2), (.1,.8,.5), (.7,.8,.9), (0,0,0)][num_rank // 400]
+
+tier_color_sample = [tier_color(r) for r in sample_best_ranked]
 
 #returns two lists
 def league_info(summoner_id):
@@ -187,21 +256,35 @@ def test_butseps():
 	print(r.status_code)
 	return r.json()
 
-#my_masteries = test_butseps()
 
+'''
+graphs
+'''
+player_set = set(sample_players)
+idset = set(range(len(sample_players)))
 
-#actually, somebody helpful on the discord recommended a different approach to this.
-#but I'll keep this here just in case.
-def get_player_samples(n, sample = set()):
+def graph(x,y):
+	fig, ax = plt.subplots()
+	ax.scatter(x,y,c=tier_color_sample)
 
-	while len(sample) < n:
-		r = get("https://na1.api.riotgames.com/lol/spectator/v4/featured-games")
-		if r.status_code != 200:
-			return sample
-		fgames = r.json()
-		time.sleep() #sleep for the suggested time.
-		
+def graph_by_class(ax,x,y,clss):
+	lovers = players_by_class[clss]
+	haters = idset - lovers
+	print(len(lovers), len(haters))
+	size = .1
+	ax.scatter([x[i] for i in lovers], [y[i] for i in lovers], color="blue", s = size*1.5)
+	ax.scatter([x[i] for i in haters], [y[i] for i in haters], color="red", s = size)
+	ax.set_title(clss)
 
+def graph_by_all_classes(x, y):
+	fig, axs = plt.subplots(2,3)
+	for i,ax in enumerate(axs.flatten()):
+		graph_by_class(ax, x, y, classes[i])
+
+def graph_by_Yasuo_mains(x, y):
+	fig, ax = plt.subplots()
+	ax.scatter(x,y,color="blue", s=2)
+	ax.scatter([x[i] for i in Yasuo_mains], [y[i] for i in Yasuo_mains], color="red", s=3)
 
 
 
