@@ -36,6 +36,8 @@ I took my sample of 1000 players from this list of matches.
 I tested this data set to see how representative of the population it was. The rank distribution matches calculations made by several other websites: op.gg, esportstales.com, leagueofgraphs.com. Although Riot doesn't publish their own calculations, there appears to be a consensus from users of the API.
 ![Rank histogram](/rank_histo.png?raw=true "Rank histogram")
 
+Note the peaks in population. This is due to players quitting ranked matches as soon as they reach a threshold for getting a reward.
+
 However, because the matches are all recent, it has a bias towards currently active players. It also seems to bias towards players who play many ranked games, which is fortunate for my purposes. The data is entirely from the North American servers.
 
 # Data Processing
@@ -60,7 +62,7 @@ But in the interest of honesty, I considered counter arguments based on further 
 
 I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into 1 or 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to draw any new conclusions. (0.72) 
 
-The strongest correlation to rank that I could find was unsurprising: number of ranked games played.
+The strongest correlation to rank that I could find was unsurprising: number of ranked games played. (0.32)
 ![Total vs Rank](/total_v_rank.png?raw=true "Total vs Rank")
 
 But lo! Number of ranked games played also negatively correlates with loyalty. 
@@ -72,7 +74,7 @@ The more games a player plays, the more variety of champions they tend to have u
 
 It could be argued that because loyalty correlates negatively with number of games played, and number of games played correlates strongly with rank, that we need to control our variable better.
 
-So I defined a new statistic called "controlledRank" which is equal to the player's rank divided by the number of games played. This number represents how much rank on average a player gains per game played. This may be a better representation of how loyalty affects performance.
+So I defined a new statistic called "controlledRank" which is equal to the player's rank divided by the number of games played. This number represents the increase in rank per game played. This may be a better representation of how loyalty affects performance.
 ![Loyalty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loyalty vs ControlledRank")
 
 In this figure, the data appears to confirm the superstition of players, but the correlation is weak.
@@ -81,4 +83,4 @@ In this figure, the data appears to confirm the superstition of players, but the
 
 If I were to convert my findings into advice for players, I think it would be this: stick to a single champion when you are first starting out. When controlled for number of games played, loyalty seems to help. However, as you play more games, you should diversify and choose your champion based on strategy rather than forcing your favorite into the game.
 
-But truly, the only statistic I found that had a strong correlation to rank was number of games played. So perhaps the best advice is to keep practicing and don't worry about it.
+But truly, the only statistic I found that had a significant correlation to rank was number of games played. So perhaps the best advice is to keep practicing and don't worry about it.
