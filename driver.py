@@ -248,8 +248,9 @@ def numerical_ranking(league_entry):
 	lp = league_entry['leaguePoints']
 	return tiers.index(tier)*400 + ranks.index(rank)*100 + lp
 
+tier_colors = [(.4,.4,.5), (.8,.5,.2), (.7,.7,.7), (.8,.8,.2), (.1,.8,.5), (.7,.8,.9), (0,0,0)]
 def tier_color(num_rank):
-	return [(.4,.4,.5), (.8,.5,.2), (.7,.7,.7), (.8,.8,.2), (.1,.8,.5), (.7,.8,.9), (0,0,0)][num_rank // 400]
+	return tier_colors[num_rank // 400]
 
 tier_color_sample = np.array([tier_color(r) for r in sample_best_ranked])
 
@@ -339,6 +340,15 @@ def graph_from_df(x, y, **kwargs):
 	ax.set_title(f"{x} vs {y}", fontsize = 20)
 	return ax
 
+#a histogram of ranks that's colored.
+def colored_rank_hist():
+	fig, ax = plt.subplots()
+	ranks_by_tier = [[d for d in sample_best_ranked if d > i*400 and d < (i+1)*400] for i in range(6)]
+	bins = 41
+	for i,data in enumerate(ranks_by_tier):
+		ax.hist(data, bins = bins, color=tier_colors[i], range = [0,2500])
+	ax.set_title("Rank histogram", fontsize = 20)
+	return ax
 
 def graph_by_class(ax,x,y,clss):
 	lovers = players_by_class[clss]
