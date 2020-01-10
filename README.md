@@ -6,7 +6,7 @@ Charlie Engelhard
 
 # Background
 
-League of Legends (LoL) is a popular computer game in which two teams of five players compete to destroy one another's base. Each player picks a "champion" from a pool of about 150 in-game characters, each with unique abilities and powers. LoL has around 100 million active players, and the most recent world championship tournament had a prize of $1 million for the winning team. 
+League of Legends (LoL) is a popular computer game by Riot Games in which two teams of five players compete to destroy one another's base. Each player picks a "champion" from a pool of about 150 in-game characters, each with unique abilities and powers. LoL has around 100 million active players, and the most recent world championship tournament had a prize of $1 million for the winning team. 
 
 As a competitive game, LoL players are greatly concerned with their in-game rank, and how they can increase it. Rank for a particular player goes up when that player is on a team that wins and down when that player is on a team that loses. 
 
@@ -38,7 +38,7 @@ I took my sample of 1000 players from this list of matches.
 I tested this data set to see how representative of the population it was. The rank distribution matches calculations made by several other websites: op.gg, esportstales.com, leagueofgraphs.com. Although Riot doesn't publish their own calculations, there appears to be a consensus from users of the API.
 ![Rank histogram](/rank_histo.png?raw=true "Rank histogram")
 
-Note the peaks in population. This is due to players quitting ranked matches as soon as they reach a threshold for getting a reward.
+Note the peaks in population. This is probably due to players quitting ranked matches as soon as they reach a threshold for getting a reward, and players who are almost to a threshold working extra hard to pass it.
 
 However, because the matches are all recent, it has a bias towards currently active players. It also seems to bias towards players who play many ranked games, which is fortunate for my purposes. The data is entirely from the North American servers.
 
