@@ -8,8 +8,10 @@ import numpy as np
 from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 
+sns.set()
 #load the app id and the api key. These should not be added to the git repo.
 #currently strings.
 app_id = None
@@ -238,7 +240,6 @@ def favorite_champ(masteries):
 
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
 ranks = ["IV", "III", "II", "I"]
-
 
 #tested
 def numerical_ranking(league_entry):

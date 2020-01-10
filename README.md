@@ -14,7 +14,7 @@ Ranks are divided into tiers which are color coded in most of my charts. The tie
 
 Each tier is divided into ranks from IV (worst) to I (best). And then each rank has a number of "league points" from 0 to 100, which is used to go up ranks and tiers. I converted Riot's rank system into a single number using the following forumula:
 
-'''
+```
 tiers = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
 ranks = ["IV", "III", "II", "I"]
 
@@ -24,15 +24,19 @@ def numerical_ranking(league_entry):
 	rank = league_entry['rank']
 	lp = league_entry['leaguePoints']
 	return tiers.index(tier)*400 + ranks.index(rank)*100 + lp
-'''
+```
+It is also worth mentioning that a player's "best rank" as used in this study is their highest rank among ranked queues that they've participated in. (There are different queues for different maps, and for pre-made teams vs assigned teams for solo players.)
 
 # Data Description
 
-I used the Riot games API to get most of my data. One exception was my initial sample of matches, which was generated through a random walk of the graph of matches and players, from the website http://canisback.com/matchId/matchlist_na1.json. (This data is recalculated every 2 days or so.)
+I used the Riot games API to obtain most of my data. One exception was my initial sample of matches, which was generated through a random walk of the graph of matches and players, from the website http://canisback.com/matchId/matchlist_na1.json. (This data is recalculated every 2 days or so.)
 
 I took my sample of 1000 players from this list of matches. 
 
-I tested this data set to see how representative of the population it was. In terms of rank, it matches the figures that Riot publishes. However, because the matches are all recent, it appears to have a bias towards currently active players. It also seems to bias towards players who play many ranked games, which is fortunate for my purposes. The data is entirely from the North American servers.
+I tested this data set to see how representative of the population it was. The rank distribution matches calculations made by several other websites: op.gg, esportstales.com, leagueofgraphs.com. Although Riot doesn't publish their own calculations, there appears to be a consensus from users of the API.
+![Rank histogram](/rank_histo.png?raw=true "Rank histogram")
+
+However, because the matches are all recent, it has a bias towards currently active players. It also seems to bias towards players who play many ranked games, which is fortunate for my purposes. The data is entirely from the North American servers.
 
 # Data Processing
 
@@ -44,18 +48,17 @@ To calculate "loyalty", I divided the mastery score of a player's highest scored
 
 
 # Initial results
-
 ![Loyalty vs Rank](/loyalty_v_rank.png?raw=true "Loyalty vs Rank")
 
 The chart above shows that naively, the superstition of players appears to be incorrect. There is no strong correlation between champion loyalty and rank, and there is actually a weak negative correlation. Why might this be? Surely, practicing more with a champion should lead to more skill. 
 
-My theory is that because LoL is a team game, it is important to pick your champion based on your teammates' and opponents' choices. When a player tries to bullheadedly force a particular champion into a matchup that is not suited to that champion, it not only affects that player's performance, but can also cause strife within the team. Perhaps flexibility is just as important as specialized practice. 
+My theory is that because LoL is a team game, it is important to pick your champion based on your teammates' and opponents' choices. When a player tries to bullheadedly force a particular champion into a matchup that is not suited to that champion, it not only affects that player's performance, but can also cause strife within the team. Perhaps flexibility is just as important as specialized practice. A player who allows their 4 teammates to play their favorite champion by picking a champion that compliments them may have a better chance of winning than a player who always plays their own favorite.
 
 But in the interest of honesty, I considered counter arguments based on further exploration of the data.
 
 # What actually does correlate with rank?
 
-I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into up to 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to be useful. (0.72) 
+I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into 1 or 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to draw any new conclusions. (0.72) 
 
 The strongest correlation to rank that I could find was unsurprising: number of ranked games played.
 ![Total vs Rank](/total_v_rank.png?raw=true "Total vs Rank")
@@ -70,7 +73,7 @@ The more games a player plays, the more variety of champions they tend to have u
 It could be argued that because loyalty correlates negatively with number of games played, and number of games played correlates strongly with rank, that we need to control our variable better.
 
 So I defined a new statistic called "controlledRank" which is equal to the player's rank divided by the number of games played. This number represents how much rank on average a player gains per game played. This may be a better representation of how loyalty affects performance.
-![Loyalty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loylty vs ControlledRank")
+![Loyalty vs ControlledRank](/loyalty_v_controlledRank.png?raw=true "Loyalty vs ControlledRank")
 
 In this figure, the data appears to confirm the superstition of players, but the correlation is weak.
 
