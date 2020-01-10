@@ -300,6 +300,7 @@ graphs
 player_set = set(sample_players)
 idset = set(range(len(sample_players)))
 
+
 #for quick graphs
 def graph(x,y, **kwargs):
 	fig, ax = plt.subplots()
@@ -311,9 +312,9 @@ def graph(x,y, **kwargs):
 	if logx:
 		ax.set_xscale("log")
 	if xlabel:
-		ax.set_xlabel(xlabel)
+		ax.set_xlabel(xlabel, fontsize=16)
 	if ylabel:
-		ax.set_ylabel(ylabel)
+		ax.set_ylabel(ylabel, fontsize=16)
 
 	mask = np.isfinite(x) & np.isfinite(y)
 	kwarg_color = kwargs.get('c')
@@ -334,7 +335,9 @@ def graph(x,y, **kwargs):
 def graph_from_df(x, y, **kwargs):
 	kwargs['xlabel'] = x
 	kwargs['ylabel'] = y
-	return graph(playerDF[x].to_numpy(), playerDF[y].to_numpy(), **kwargs)
+	ax = graph(playerDF[x].to_numpy(), playerDF[y].to_numpy(), **kwargs)
+	ax.set_title(f"{x} vs {y}", fontsize = 20)
+	return ax
 
 
 def graph_by_class(ax,x,y,clss):
