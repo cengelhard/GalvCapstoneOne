@@ -1,6 +1,8 @@
 # Champion Loyalty In League Of Legends
+![LoL](/Lol_cover_image.jpg?raw=true "LoL")
 
 Charlie Engelhard
+
 
 # Background
 
@@ -52,7 +54,7 @@ To calculate "loyalty", I divided the mastery score of a player's highest scored
 # Initial results
 ![Loyalty vs Rank](/loyalty_v_rank.png?raw=true "Loyalty vs Rank")
 
-The chart above shows that naively, the superstition of players appears to be incorrect. There is no strong correlation between champion loyalty and rank, and there is actually a weak negative correlation. Why might this be? Surely, practicing more with a champion should lead to more skill. 
+The chart above shows that naively, the superstition of players appears to be incorrect. There is actually a weak negative correlation between loyalty and rank. Why might this be? Surely, practicing more with a champion should lead to more skill. 
 
 My theory is that because LoL is a team game, it is important to pick your champion based on your teammates' and opponents' choices. When a player tries to bullheadedly force a particular champion into a matchup that is not suited to that champion, it not only affects that player's performance, but can also cause strife within the team. Perhaps flexibility is just as important as specialized practice. A player who allows their 4 teammates to play their favorite champion by picking a champion that compliments them may have a better chance of winning than a player who always plays their own favorite.
 
@@ -60,7 +62,7 @@ But in the interest of honesty, I considered counter arguments based on further 
 
 # What actually does correlate with rank?
 
-I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into 1 or 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to draw any new conclusions. (0.72) 
+I calculated many more statistics that I thought might correlate with rank. Champions are categorized by Riot into 1 or 2 of 6 different classes (Fighter, Tank, Mage, Assassin, Support, Marksman), and I wasn't able to find a correlation between these and rank. I also tried to isolate Yasuo players (Yasuo is the most popular favorite champion, and is somewhat infamous in the community) but was not able to find anything interesting. I also looked at "summoner level", which is a representation of how much the player has played the game, and this correlated too strongly with total number of matches played to draw any new conclusions. (0.72) 
 
 The strongest correlation to rank that I could find was unsurprising: number of ranked games played. (0.32)
 ![Total vs Rank](/total_v_rank.png?raw=true "Total vs Rank")
