@@ -266,7 +266,7 @@ def league_info(summoner_id):
 		best_lp = max(lps) if len(lps) > 0 else 0
 		return total_ranked, best_lp
 	else:
-		print("league info got status code {r.status_code}")
+		print(f"league info got status code {r.status_code}")
 
 def unzip(list_of_tuples):
 	return list(map(list, zip(*list_of_tuples)))
